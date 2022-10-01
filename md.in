@@ -1,0 +1,6 @@
+id He
+natom 864
+geo_dir geo.in
+rcut 8.5
+neighbor_r 2
+neighbor_n 300
