@@ -6,58 +6,71 @@
 
 namespace hw2
 {
+    std::vector<atom> &geo::getAtoms()
+    {
+        return this->atoms;
+    }
 
-    double geo::get_neighbor_rcut(){
+    void geo::setUnitsize(double unit_size)
+    {
+        this->unit_size = unit_size;
+    }
+    double geo::getUnitsize()
+    {
+        return unit_size;
+    }
+
+    void geo::setAtomname(std::string atomName)
+    {
+        this->atom_name = atomName;
+    }
+    std::string geo::getAtomname()
+    {
+        return atom_name;
+    }
+
+    void geo::setInputFilePath(std::string filePath)
+    {
+        this->input_file_path = filePath;
+    }
+    std::string geo::getInputFilePath()
+    {
+        return input_file_path;
+    }
+
+    void geo::setRcut(double rcut)
+    {
+        this->rcut = rcut;
+    }
+    void geo::setNeighbor_r(double neighbor_r)
+    {
+        this->neighbor_r = neighbor_r;
+    }
+    void geo::setNeighbor_n(double neighbor_n)
+    {
+        this->neighbor_n = neighbor_n;
+    }
+    double geo::get_R_neighborAtom()
+    {
         return rcut + neighbor_r;
-    }
-
-    void geo::set_sizeX(double x)
-    {
-        sizeX = x;
-    }
-
-    void geo::set_sizeY(double y)
-    {
-        sizeY = y;
-    }
-
-    void geo::set_sizeZ(double z)
-    {
-        sizeZ = z;
-    }
-
-    double geo::get_sizeX()
-    {
-        return sizeX;
-    }
-
-    double geo::get_sizeY()
-    {
-        return sizeY;
-    }
-
-    double geo::get_sizeZ()
-    {
-        return sizeZ;
-    }
-
-    int geo::get_atom_number()
-    {
-        return atom_number;
     }
 
     void geo::set_atom_number(int number)
     {
         atom_number = number;
     }
+    int geo::get_atom_number()
+    {
+        return atom_number;
+    }
 
-    void geo::init_neighborAtom_table(std::vector<hw2::atom> &atomic_information, double distance, double size)
+    void geo::init_neighborAtom_table()
     {
 
         // init
-        neighborAtom_number = new int[atomic_information.size()]();
-        neighborAtom_table = new int *[atomic_information.size()]();
-        for (int i = 0; i < atomic_information.size(); i++)
+        neighborAtom_number = new int[atom_number]();
+        neighborAtom_table = new int *[atom_number]();
+        for (int i = 0; i < atom_number; i++)
         {
             neighborAtom_table[i] = new int[neighbor_n];
             neighborAtom_number[i] = 0;
@@ -70,25 +83,25 @@ namespace hw2
         // std::cout << atomic_information.size() << std::endl;
 
         // calculate
-        for (int i = 0; i < atomic_information.size(); i++)
+        for (int i = 0; i < atom_number; i++)
         {
 
             // std::cout << "/* message */" << std::endl;
-            for (int j = 0; j < atomic_information.size(); j++)
+            for (int j = 0; j < atom_number; j++)
             {
                 if (i == j)
                 {
                     continue;
                 }
-                double dist = calculate_distance(atomic_information[i], atomic_information[j], size);
+                double dist = calculate_distance(atoms[i], atoms[j], unit_size);
 
                 // std::cout << distance << std::endl;
-                
-                if (dist < distance)
+
+                if (dist < get_R_neighborAtom())
                 {
                     // if(neighborAtom_number[i] >= neighbor_n)
                     // {
-                        
+
                     // }
 
                     // std::cout << "/* message */" << std::endl;
@@ -98,13 +111,19 @@ namespace hw2
                         neighborAtom_table[i][neighborAtom_number[i]] = j;
                         neighborAtom_number[i]++;
                     }
-
                 }
-                
             }
-            
         }
-        
+    }
+
+    int geo::get_neighborAtomNumber(int n)
+    {
+        return this->neighborAtom_number[n];
+    }
+
+    int **geo::get_neighborAtomTable_pointer()
+    {
+        return this->neighborAtom_table;
     }
 
     double calculate_distance(atom atom1info, atom atom2info, double size)
@@ -123,27 +142,30 @@ namespace hw2
 
         if (x < y)
         {
-            double s1 = y -x;
+            double s1 = y - x;
             double s2 = size - y + x;
             if (s1 < s2)
             {
                 return s1;
-            } else
+            }
+            else
             {
                 return s2;
             }
-        } else {
+        }
+        else
+        {
             double s1 = x - y;
             double s2 = size - x + y;
             if (s1 < s2)
             {
                 return s1;
-            } else
+            }
+            else
             {
                 return s2;
             }
         }
-        
 
         // return std::min(std::min(one, two), three);
     }

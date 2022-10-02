@@ -17,13 +17,13 @@ namespace hw2
         double velocity_x;
         double velocity_y;
         double velocity_z;
-        
+
     public:
         atom(/* args */){};
         ~atom(){};
 
         void setPostion(double in_postion_x, double in_postion_y, double in_postion_z);
-        
+
         void setVelocity(double in_velocity_x, double in_velocity_y, double in_velocity_z);
 
         double getPostionX();
@@ -31,10 +31,7 @@ namespace hw2
         double getPostionY();
 
         double getPostionZ();
-
-        
     };
-
 
     double setXToUnit(double x, double sizeX);
 
