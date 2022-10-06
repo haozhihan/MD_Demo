@@ -1,4 +1,6 @@
 #include "atom.h"
+#include "geo.h"
+#include <cmath>
 
 namespace hw2
 {
@@ -43,4 +45,52 @@ namespace hw2
     {
         return this->postion_z;
     }
+
+
+    double atom::getForceX(){
+        return this->force_x;
+    }
+
+    double atom::getForceY(){
+        return this->force_y;
+    }
+
+    double atom::getForceZ(){
+        return this->force_z;
+    }
+
+    double atom::twoAtompPotential(atom another, double size, double rcut, double epsilon, double sigma, double ecut){
+        
+        double r = hw2::calculate_distance( this->getPostionX(), this->getPostionY(), this->getPostionZ(), 
+                                            another.getPostionX(), another.getPostionY(), another.getPostionZ(), size);
+        if (r <= rcut)
+        {
+            double E = 4 * epsilon * (pow(sigma/r, 12) - pow(sigma/r, 6)) - ecut;
+            return E;
+        } else 
+        {
+            return 0.0;
+        }
+
+    }
+
+    void atom::twoAtomForce(atom another, double size, double rcut, double epsilon, double sigma){
+
+        double r = hw2::calculate_distance( this->getPostionX(), this->getPostionY(), this->getPostionZ(), 
+                                            another.getPostionX(), another.getPostionY(), another.getPostionZ(), size);
+        if (r <= rcut)
+        {
+            double temp = 4 * epsilon * ( 12 * pow(sigma/r, 12) - 6 * pow(sigma/r, 6) ) / pow(r, 2) ;
+            force_x = force_x + temp * short_distance_OneDirection(this->getPostionX(), another.getPostionX(), size);
+            force_y = force_y + temp * short_distance_OneDirection(this->getPostionY(), another.getPostionY(), size);
+            force_z = force_z + temp * short_distance_OneDirection(this->getPostionZ(), another.getPostionZ(), size);
+        } else
+        {
+            force_x = force_x + 0;
+            force_y = force_y + 0;
+            force_z = force_z + 0;
+        }
+        return;
+    }
+
 } // namespace hw2

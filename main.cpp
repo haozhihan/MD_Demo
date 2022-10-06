@@ -99,6 +99,12 @@ namespace hw2
         atom_group.setNeighbor_r(info);
         reader >> word >> info;
         atom_group.setNeighbor_n(info);
+        reader >> word >> info;
+        atom_group.setEpsilon(info);
+        reader >> word >> info;
+        atom_group.setSigma(info);
+
+        atom_group.calEcut();
     }
 
     void write_No12_neighborAtom_table(std::string filename, hw2::geo &geo)
@@ -125,9 +131,27 @@ namespace hw2
 
 } // namespace hw2
 
+
+namespace hw3
+{
+    void write_hw3(double totalE, std::vector<hw2::atom>& atoms ){
+        std::ofstream writer;
+        writer.open("energy.txt", std::ios::out);
+        writer << "Total Energy" << std::endl << std::fixed << std::setprecision(12) << totalE << std::endl;
+        writer.close();
+
+        writer.open("force.txt", std::ios::out);
+        for (int i = 0; i < atoms.size(); i++)
+        {
+            writer << i + 1 << "\t" << std::fixed << std::setprecision(12) 
+            << atoms[i].getForceX() << "\t" << atoms[i].getForceY() << "\t" << atoms[i].getForceZ() << std::endl;
+        }
+    }
+} // namespace hw3
+
+
 int main()
 {
-    std::string filenameout = "geo.out";
 
     hw2::geo atom_group;
 
@@ -137,5 +161,8 @@ int main()
 
     atom_group.init_neighborAtom_table();
 
-    hw2::write_No12_neighborAtom_table(filenameout, atom_group);
+    double totalE = atom_group.total_energy();
+    atom_group.total_force();
+
+    hw3::write_hw3(totalE, atom_group.getAtoms());
 }

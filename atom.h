@@ -18,6 +18,10 @@ namespace hw2
         double velocity_y;
         double velocity_z;
 
+        double force_x =0;
+        double force_y =0;
+        double force_z =0;
+
     public:
         atom(/* args */){};
         ~atom(){};
@@ -31,6 +35,17 @@ namespace hw2
         double getPostionY();
 
         double getPostionZ();
+
+
+        double getForceX();
+
+        double getForceY();
+
+        double getForceZ();
+
+        double twoAtompPotential(atom another, double size, double rcut, double epsilon, double sigma, double ecut);
+
+        void twoAtomForce(atom another, double size, double rcut, double epsilon, double sigma);
     };
 
     double setXToUnit(double x, double sizeX);

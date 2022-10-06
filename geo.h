@@ -22,6 +22,11 @@ namespace hw2
         double neighbor_r;
         int neighbor_n;
 
+// hw3 add
+        double ecut;
+        double epsilon;
+        double sigma;
+
     public:
         geo(/* args */){};
         ~geo(){};
@@ -33,26 +38,32 @@ namespace hw2
 
         void setAtomname(std::string atomName);
         std::string getAtomname();
-
         void setInputFilePath(std::string filePath);
         std::string getInputFilePath();
-
         void set_atom_number(int number);
         int get_atom_number();
-
         void setRcut(double rcut);
         void setNeighbor_r(double neighbor_r);
         void setNeighbor_n(double neighbor_n);
         double get_R_neighborAtom();
+        
+        void setEpsilon(double epsilon);
+        void setSigma(double sigma);
+        void calEcut();
+
 
         void init_neighborAtom_table();
 
         int get_neighborAtomNumber(int n);
 
         int **get_neighborAtomTable_pointer();
+
+        double total_energy();
+
+        void total_force();
     };
 
-    double calculate_distance(atom atom1info, atom atom2info, double size);
+    double calculate_distance(double x1, double y1, double z1, double x2, double y2, double z2, double size);
 
     double short_distance_OneDirection(double x, double y, double size);
 

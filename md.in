@@ -4,3 +4,5 @@ geo_dir geo.in
 rcut 8.5
 neighbor_r 2
 neighbor_n 300
+epsilon 0.01032
+sigma 3.405

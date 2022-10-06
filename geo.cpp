@@ -55,6 +55,20 @@ namespace hw2
         return rcut + neighbor_r;
     }
 
+    void geo::setEpsilon(double epsilon)
+    {
+        this->epsilon = epsilon;
+    }
+
+    void geo::setSigma(double sigma)
+    {
+        this->sigma = sigma;
+    }
+
+    void geo::calEcut(){
+        this->ecut = 4 * this->epsilon * (pow(this->sigma / rcut, 12) - pow(this->sigma / rcut, 6));
+    }
+
     void geo::set_atom_number(int number)
     {
         atom_number = number;
@@ -93,7 +107,8 @@ namespace hw2
                 {
                     continue;
                 }
-                double dist = calculate_distance(atoms[i], atoms[j], unit_size);
+                double dist = calculate_distance(atoms[i].getPostionX(), atoms[i].getPostionY(), atoms[i].getPostionZ(),
+                                                 atoms[j].getPostionX(), atoms[j].getPostionY(), atoms[j].getPostionZ(), unit_size);
 
                 // std::cout << distance << std::endl;
 
@@ -126,11 +141,37 @@ namespace hw2
         return this->neighborAtom_table;
     }
 
-    double calculate_distance(atom atom1info, atom atom2info, double size)
+    double geo::total_energy()
     {
-        double distance_x = short_distance_OneDirection(atom1info.getPostionX(), atom2info.getPostionX(), size);
-        double distance_y = short_distance_OneDirection(atom1info.getPostionY(), atom2info.getPostionY(), size);
-        double distance_z = short_distance_OneDirection(atom1info.getPostionZ(), atom2info.getPostionZ(), size);
+        double E = 0.0;
+        for (int i = 0; i < atom_number; i++)
+        {
+            for (int j = 0; j < neighborAtom_number[i]; j++)
+            {
+                int atomnumber = neighborAtom_table[i][j];
+                E = E + atoms[i].twoAtompPotential(atoms[atomnumber], unit_size, rcut, epsilon, sigma, ecut);
+            }
+        }
+        return E / 2;
+    }
+
+    void geo::total_force()
+    {
+        for (int i = 0; i < atom_number; i++)
+        {
+            for (int j = 0; j < neighborAtom_number[i]; j++)
+            {
+                int atomnumber = neighborAtom_table[i][j];
+                atoms[i].twoAtomForce(atoms[atomnumber], unit_size, rcut, epsilon, sigma);
+            }
+        }
+    }
+
+    double calculate_distance(double x1, double y1, double z1, double x2, double y2, double z2, double size)
+    {
+        double distance_x = short_distance_OneDirection(x1, x2, size);
+        double distance_y = short_distance_OneDirection(y1, y2, size);
+        double distance_z = short_distance_OneDirection(z1, z2, size);
         return std::sqrt(std::pow(distance_x, 2) + std::pow(distance_y, 2) + std::pow(distance_z, 2));
     }
 
@@ -146,7 +187,7 @@ namespace hw2
             double s2 = size - y + x;
             if (s1 < s2)
             {
-                return s1;
+                return x - y;
             }
             else
             {
@@ -163,7 +204,7 @@ namespace hw2
             }
             else
             {
-                return s2;
+                return x - y - size;
             }
         }
 
