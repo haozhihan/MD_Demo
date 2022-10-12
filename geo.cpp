@@ -3,80 +3,121 @@
 #include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <fstream>
+#include <string>
 
 namespace hw2
 {
+
+    void geo::readMDIN()
+    {
+        std::ifstream reader;
+        reader.open("md.in", std::ios::in);
+        
+        std::string word;
+        double info;
+
+        reader >> word >> word;
+        this->atom_name = word;
+
+        reader >> word >> info;
+        this->atom_number = (int)info;
+
+        reader >> word >> word;
+        this->geoin_file_path = word;
+
+        reader >> word >> info;
+        this->rcut = info;
+
+        reader >> word >> info;
+        this->neighbor_r = info;
+
+        reader >> word >> info;
+        this->neighbor_n = info;
+
+        reader >> word >> info;
+        this->epsilon = info;
+
+        reader >> word >> info;
+        this->sigma = info;
+
+        this->ecut = 4 * this->epsilon * (pow(this->sigma / rcut, 12) - pow(this->sigma / rcut, 6));
+    }
+
+
+
+    void geo::readGeoIN()
+    {
+        std::ifstream reader;
+        std::string infoline;
+        reader.open(geoin_file_path, std::ios::in);
+        if (!reader.is_open())
+        {
+            std::cout << "Not find files：" << geoin_file_path << std::endl;
+            return;
+        }
+        double xx, yy, zz;
+        std::string useless;
+
+        // read %CELL_PARAMETER
+        if (getline(reader, infoline) && infoline == "%CELL_PARAMETER")
+        {
+            reader >> xx >> useless >> useless;
+            reader >> useless >> yy >> useless;
+            reader >> useless >> useless >> zz;
+            this->unit_size = xx;
+        }
+
+
+        // read ATOMIC_POSTION
+        while (infoline != "%ATOMIC_POSTION")
+        {
+            getline(reader, infoline);
+        }
+
+        if (infoline == "%ATOMIC_POSTION")
+        {
+            hw2::atom ainfo;
+            for (int i = 0; i < atom_number; i++)
+            {
+                reader >> useless >> xx >> yy >> zz;
+                ainfo.setPostion(hw2::setXToUnit(xx, this->unit_size),
+                                 hw2::setXToUnit(yy, this->unit_size),
+                                 hw2::setXToUnit(zz, this->unit_size));
+                atoms.push_back(ainfo);
+            }
+        }
+
+        // read ATOMIC_VELOCITY
+        while (infoline != "%ATOMIC_VELOCITY")
+        {
+            getline(reader, infoline);
+        }
+
+        if (infoline == "%ATOMIC_VELOCITY")
+        {
+            for (int i = 0; i < atom_number; i++)
+            {
+                reader >> useless >> xx >> yy >> zz;
+                atoms[i].setVelocity(xx, yy, zz);
+            }
+        }
+
+        reader.close();
+        return;
+    }
+
+
     std::vector<atom> &geo::getAtoms()
     {
         return this->atoms;
     }
 
-    void geo::setUnitsize(double unit_size)
-    {
-        this->unit_size = unit_size;
-    }
-    double geo::getUnitsize()
-    {
-        return unit_size;
-    }
-
-    void geo::setAtomname(std::string atomName)
-    {
-        this->atom_name = atomName;
-    }
-    std::string geo::getAtomname()
-    {
-        return atom_name;
-    }
-
-    void geo::setInputFilePath(std::string filePath)
-    {
-        this->input_file_path = filePath;
-    }
-    std::string geo::getInputFilePath()
-    {
-        return input_file_path;
-    }
-
-    void geo::setRcut(double rcut)
-    {
-        this->rcut = rcut;
-    }
-    void geo::setNeighbor_r(double neighbor_r)
-    {
-        this->neighbor_r = neighbor_r;
-    }
-    void geo::setNeighbor_n(double neighbor_n)
-    {
-        this->neighbor_n = neighbor_n;
-    }
     double geo::get_R_neighborAtom()
     {
         return rcut + neighbor_r;
     }
 
-    void geo::setEpsilon(double epsilon)
-    {
-        this->epsilon = epsilon;
-    }
-
-    void geo::setSigma(double sigma)
-    {
-        this->sigma = sigma;
-    }
-
-    void geo::calEcut(){
-        this->ecut = 4 * this->epsilon * (pow(this->sigma / rcut, 12) - pow(this->sigma / rcut, 6));
-    }
-
-    void geo::set_atom_number(int number)
-    {
-        atom_number = number;
-    }
-    int geo::get_atom_number()
-    {
-        return atom_number;
-    }
 
     void geo::init_neighborAtom_table()
     {
@@ -130,6 +171,7 @@ namespace hw2
             }
         }
     }
+
 
     int geo::get_neighborAtomNumber(int n)
     {

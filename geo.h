@@ -16,7 +16,7 @@ namespace hw2
         // md.in
         std::string atom_name;
         int atom_number;
-        std::string input_file_path;
+        std::string geoin_file_path;
 
         double rcut;
         double neighbor_r;
@@ -31,26 +31,13 @@ namespace hw2
         geo(/* args */){};
         ~geo(){};
 
+
+        void readMDIN();
+        void readGeoIN();
+
         std::vector<atom> &getAtoms();
-
-        void setUnitsize(double unit_size);
-        double getUnitsize();
-
-        void setAtomname(std::string atomName);
-        std::string getAtomname();
-        void setInputFilePath(std::string filePath);
-        std::string getInputFilePath();
-        void set_atom_number(int number);
-        int get_atom_number();
-        void setRcut(double rcut);
-        void setNeighbor_r(double neighbor_r);
-        void setNeighbor_n(double neighbor_n);
         double get_R_neighborAtom();
         
-        void setEpsilon(double epsilon);
-        void setSigma(double sigma);
-        void calEcut();
-
 
         void init_neighborAtom_table();
 
