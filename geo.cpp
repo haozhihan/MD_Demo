@@ -16,20 +16,21 @@ namespace hw2
         std::ofstream ofs_force("./OUTPUT/force.txt", std::ios::app);
         std::ofstream ofs_log("./OUTPUT/run.log", std::ios::app);
         
+        // postion.txt
         ofs_postion << "Step: " << step << ", Time: " << step * MDstep_time << "ps" << std::endl;
         for (int i = 0; i < atom_number; i++)
         {
             ofs_postion << i << "\t" << std::fixed << std::setprecision(12) << atoms[i].getPostionX() << "\t" << atoms[i].getPostionY() << "\t" << atoms[i].getPostionZ() <<std::endl;		
         }
 
-
+        // velocity.txt
         ofs_velocity << "Step: " << step << ", Time: " << step * MDstep_time << "ps" << std::endl;
         for (int i = 0; i < atom_number; i++)
         {
             ofs_velocity << i << "\t" << std::fixed << std::setprecision(12) << atoms[i].getVelocityX() << "\t" << atoms[i].getVelocityY() << "\t" << atoms[i].getVelocityZ() <<std::endl;		
         }
 
-
+        // force.txt
         ofs_force << "Step: " << step << ", Time: " << step * MDstep_time << "ps" << std::endl;
         for (int i = 0; i < atom_number; i++)
         {
@@ -37,6 +38,7 @@ namespace hw2
         }
 
 
+        // run.log
         double total_potential = total_energy();
 
         double total_kinetic = 0.0;
@@ -52,7 +54,6 @@ namespace hw2
         {
             ofs_log << "Step: " << "\t" << "Time: "<< "\t" << "total_energy: "<< "\t" << "total_potential: " << "\t"  << "total_kinetic_energy: " << "\t" << "temperature: "  << std::endl;
         }
-        
         ofs_log << step  << "\t" << std::fixed << std::setprecision(2)  << step * MDstep_time << "ps"  << "\t"  << std::fixed << std::setprecision(12) 
         << total_potential + total_kinetic << "\t"  << total_potential  << "\t" << total_kinetic  << "\t" << temperature << std::endl;
     }
@@ -60,7 +61,7 @@ namespace hw2
     void geo::runMD()
     {
 
-        // define force value
+        // define store pre force value
         double** pre_atoms_force_matrix = new double* [atom_number];
         for (int i = 0; i < atom_number; i++)
         {
@@ -118,10 +119,10 @@ namespace hw2
         
     }
 
-    void geo::readMDIN()
+    void geo::readMDIN(std::string mdINpath)
     {
         std::ifstream reader;
-        reader.open("./INPUT/md.in", std::ios::in);
+        reader.open(mdINpath, std::ios::in);
         
         std::string word;
         double info;
@@ -151,6 +152,10 @@ namespace hw2
         this->sigma = info;
 
         this->ecut = 4 * this->epsilon * (pow(this->sigma / rcut, 12) - pow(this->sigma / rcut, 6));
+
+
+        reader >> word >> word;
+        this->is_read_velocity = word;
 
         // important!!!
         reader >> word >> info;
@@ -211,18 +216,22 @@ namespace hw2
             }
         }
 
-        // read ATOMIC_VELOCITY
-        while (infoline != "%ATOMIC_VELOCITY")
-        {
-            getline(reader, infoline);
-        }
 
-        if (infoline == "%ATOMIC_VELOCITY")
+        if (this->is_read_velocity == "yes")
         {
-            for (int i = 0; i < atom_number; i++)
+            // read ATOMIC_VELOCITY
+            while (infoline != "%ATOMIC_VELOCITY")
             {
-                reader >> useless >> xx >> yy >> zz;
-                atoms[i].setVelocity(xx, yy, zz);
+                getline(reader, infoline);
+            }
+
+            if (infoline == "%ATOMIC_VELOCITY")
+            {
+                for (int i = 0; i < atom_number; i++)
+                {
+                    reader >> useless >> xx >> yy >> zz;
+                    atoms[i].setVelocity(xx, yy, zz);
+                }
             }
         }
 

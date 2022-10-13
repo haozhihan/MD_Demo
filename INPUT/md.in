@@ -6,6 +6,7 @@ neighbor_r 2
 max_neighbor_n 250
 LJepsilon 0.01032
 LJsigma 3.405
+is_read_velocity yes
 mass 4.0026
 update_neighbor_step 5
 totalstep 100

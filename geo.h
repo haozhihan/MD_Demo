@@ -30,6 +30,7 @@ namespace hw2
         double sigma;
 
         // hw4 add
+        std::string is_read_velocity;
         double mass;
         int update_neighbor_step;
         int total_step;
@@ -37,8 +38,8 @@ namespace hw2
         int output_everystep;
 
     public:
-        geo(/* args */){
-            readMDIN();
+        geo(std::string mdINpath){
+            readMDIN(mdINpath);
             readGeoIN();
                     
             // init 0 for neighborAtom_number & neighborAtom_table 
@@ -48,14 +49,18 @@ namespace hw2
             {
                 neighborAtom_table[i] = new int[neighbor_n];
             }
+
             build_neighborAtom_table();
+
+
             // cal init force for every atom
             cal_every_atom_force();
         };
+
         ~geo(){};
 
 
-        void readMDIN();
+        void readMDIN(std::string mdINpath);
         void readGeoIN();
 
         std::vector<atom> &getAtoms();
