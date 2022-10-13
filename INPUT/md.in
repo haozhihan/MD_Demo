@@ -1,0 +1,14 @@
+id He
+natom 864
+geo_dir ./INPUT/geo1.in
+rcut 8.5
+neighbor_r 2
+max_neighbor_n 250
+LJepsilon 0.01032
+LJsigma 3.405
+mass 4.0026
+update_neighbor_step 5
+totalstep 100
+MDstep_length 0.01
+output_everystep 2
+

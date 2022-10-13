@@ -1,8 +1,0 @@
-id He
-natom 864
-geo_dir geo1.in
-rcut 8.5
-neighbor_r 2
-neighbor_n 300
-epsilon 0.01032
-sigma 3.405

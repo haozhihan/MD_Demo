@@ -18,9 +18,9 @@ namespace hw2
         double velocity_y;
         double velocity_z;
 
-        double force_x =0;
-        double force_y =0;
-        double force_z =0;
+        double force_x;
+        double force_y;
+        double force_z;
 
     public:
         atom(/* args */){};
@@ -30,11 +30,21 @@ namespace hw2
 
         void setVelocity(double in_velocity_x, double in_velocity_y, double in_velocity_z);
 
+
+        void setForceZero();
+
         double getPostionX();
 
         double getPostionY();
 
         double getPostionZ();
+
+
+        double getVelocityX();
+
+        double getVelocityY();
+
+        double getVelocityZ();
 
 
         double getForceX();

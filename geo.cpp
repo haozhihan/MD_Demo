@@ -5,14 +5,123 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <iomanip>
 
 namespace hw2
 {
 
+    void geo::output(int step ){
+        std::ofstream ofs_postion("./OUTPUT/position.txt", std::ios::app);
+        std::ofstream ofs_velocity("./OUTPUT/velocity.txt", std::ios::app);
+        std::ofstream ofs_force("./OUTPUT/force.txt", std::ios::app);
+        std::ofstream ofs_log("./OUTPUT/run.log", std::ios::app);
+        
+        ofs_postion << "Step: " << step << ", Time: " << step * MDstep_time << "ps" << std::endl;
+        for (int i = 0; i < atom_number; i++)
+        {
+            ofs_postion << i << "\t" << std::fixed << std::setprecision(12) << atoms[i].getPostionX() << "\t" << atoms[i].getPostionY() << "\t" << atoms[i].getPostionZ() <<std::endl;		
+        }
+
+
+        ofs_velocity << "Step: " << step << ", Time: " << step * MDstep_time << "ps" << std::endl;
+        for (int i = 0; i < atom_number; i++)
+        {
+            ofs_velocity << i << "\t" << std::fixed << std::setprecision(12) << atoms[i].getVelocityX() << "\t" << atoms[i].getVelocityY() << "\t" << atoms[i].getVelocityZ() <<std::endl;		
+        }
+
+
+        ofs_force << "Step: " << step << ", Time: " << step * MDstep_time << "ps" << std::endl;
+        for (int i = 0; i < atom_number; i++)
+        {
+            ofs_force << i << "\t" << std::fixed << std::setprecision(12) << atoms[i].getForceX() << "\t" << atoms[i].getForceY() << "\t" << atoms[i].getForceZ() <<std::endl;		
+        }
+
+
+        double total_potential = total_energy();
+
+        double total_kinetic = 0.0;
+        for (int i = 0; i < atom_number; i++)
+        {
+            total_kinetic = total_kinetic + pow(atoms[i].getVelocityX(), 2) + pow(atoms[i].getVelocityY(), 2) + pow(atoms[i].getVelocityZ(), 2);
+        }
+        total_kinetic = total_kinetic * mass / 2;
+
+        double temperature =  2 * total_kinetic / atom_number / (1.38064852e-23 / 1.602176634e-19)   / 3 ;
+
+        if (step == 0)
+        {
+            ofs_log << "Step: " << "\t" << "Time: "<< "\t" << "total_energy: "<< "\t" << "total_potential: " << "\t"  << "total_kinetic_energy: " << "\t" << "temperature: "  << std::endl;
+        }
+        
+        ofs_log << step  << "\t" << std::fixed << std::setprecision(2)  << step * MDstep_time << "ps"  << "\t"  << std::fixed << std::setprecision(12) 
+        << total_potential + total_kinetic << "\t"  << total_potential  << "\t" << total_kinetic  << "\t" << temperature << std::endl;
+    }
+
+    void geo::runMD()
+    {
+
+        // define force value
+        double** pre_atoms_force_matrix = new double* [atom_number];
+        for (int i = 0; i < atom_number; i++)
+        {
+            pre_atoms_force_matrix[i] = new double[3];
+            pre_atoms_force_matrix[i][0] = 0;
+            pre_atoms_force_matrix[i][1] = 0;
+            pre_atoms_force_matrix[i][2] = 0;
+        }
+        
+        for (int step = 0; step <= total_step; step++)
+        {
+            // output
+            if (step % output_everystep == 0)
+            {
+                output(step);
+            }
+
+            // update neighborAtom_table
+            if (step % update_neighbor_step == 0 && step != 0)
+            {
+                build_neighborAtom_table();
+            }
+
+            // store pre force
+            for (int i = 0; i < atom_number; i++)
+            {
+                pre_atoms_force_matrix[i][0] = atoms[i].getForceX();
+                pre_atoms_force_matrix[i][1] = atoms[i].getForceY();
+                pre_atoms_force_matrix[i][2] = atoms[i].getForceZ();
+            }
+
+            // update postion
+            for (int i = 0; i < atom_number; i++)
+            {
+                double x = atoms[i].getPostionX() + atoms[i].getVelocityX() * MDstep_time + atoms[i].getForceX() * pow(MDstep_time, 2) / 2 / mass;
+                double y = atoms[i].getPostionY() + atoms[i].getVelocityY() * MDstep_time + atoms[i].getForceY() * pow(MDstep_time, 2) / 2 / mass;
+                double z = atoms[i].getPostionZ() + atoms[i].getVelocityZ() * MDstep_time + atoms[i].getForceZ() * pow(MDstep_time, 2) / 2 / mass;
+                atoms[i].setPostion(x, y, z);           
+            }
+
+            // cal new force according new postion
+            cal_every_atom_force();
+
+            // update velocity
+            for (int i = 0; i < atom_number; i++)
+            {
+                double x = atoms[i].getVelocityX() + MDstep_time * ( atoms[i].getForceX() + pre_atoms_force_matrix[i][0] ) / 2 / mass;
+                double y = atoms[i].getVelocityY() + MDstep_time * ( atoms[i].getForceY() + pre_atoms_force_matrix[i][1] ) / 2 / mass;
+                double z = atoms[i].getVelocityZ() + MDstep_time * ( atoms[i].getForceZ() + pre_atoms_force_matrix[i][2] ) / 2 / mass;
+                atoms[i].setVelocity(x, y, z);
+            }
+
+            
+        }
+        
+    }
+
     void geo::readMDIN()
     {
         std::ifstream reader;
-        reader.open("md.in", std::ios::in);
+        reader.open("./INPUT/md.in", std::ios::in);
         
         std::string word;
         double info;
@@ -42,9 +151,23 @@ namespace hw2
         this->sigma = info;
 
         this->ecut = 4 * this->epsilon * (pow(this->sigma / rcut, 12) - pow(this->sigma / rcut, 6));
+
+        // important!!!
+        reader >> word >> info;
+        this->mass = info * 10 / 6.02214086e23 / 1.602176634e-19;
+
+        reader >> word >> info;
+        this->update_neighbor_step = (int)info;
+
+        reader >> word >> info;
+        this->total_step = (int)info;
+
+        reader >> word >> info;
+        this->MDstep_time = info;
+
+        reader >> word >> info;
+        this->output_everystep = info;
     }
-
-
 
     void geo::readGeoIN()
     {
@@ -119,15 +242,12 @@ namespace hw2
     }
 
 
-    void geo::init_neighborAtom_table()
+    void geo::build_neighborAtom_table()
     {
 
         // init
-        neighborAtom_number = new int[atom_number]();
-        neighborAtom_table = new int *[atom_number]();
         for (int i = 0; i < atom_number; i++)
         {
-            neighborAtom_table[i] = new int[neighbor_n];
             neighborAtom_number[i] = 0;
             for (int j = 0; j < neighbor_n; j++)
             {
@@ -135,13 +255,9 @@ namespace hw2
             }
         }
 
-        // std::cout << atomic_information.size() << std::endl;
-
         // calculate
         for (int i = 0; i < atom_number; i++)
         {
-
-            // std::cout << "/* message */" << std::endl;
             for (int j = 0; j < atom_number; j++)
             {
                 if (i == j)
@@ -151,17 +267,8 @@ namespace hw2
                 double dist = calculate_distance(atoms[i].getPostionX(), atoms[i].getPostionY(), atoms[i].getPostionZ(),
                                                  atoms[j].getPostionX(), atoms[j].getPostionY(), atoms[j].getPostionZ(), unit_size);
 
-                // std::cout << distance << std::endl;
-
                 if (dist < get_R_neighborAtom())
                 {
-                    // if(neighborAtom_number[i] >= neighbor_n)
-                    // {
-
-                    // }
-
-                    // std::cout << "/* message */" << std::endl;
-
                     if (neighborAtom_number[i] < neighbor_n)
                     {
                         neighborAtom_table[i][neighborAtom_number[i]] = j;
@@ -197,10 +304,11 @@ namespace hw2
         return E / 2;
     }
 
-    void geo::total_force()
-    {
+    void geo::cal_every_atom_force()
+    {   
         for (int i = 0; i < atom_number; i++)
         {
+            atoms[i].setForceZero();
             for (int j = 0; j < neighborAtom_number[i]; j++)
             {
                 int atomnumber = neighborAtom_table[i][j];

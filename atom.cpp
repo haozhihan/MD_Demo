@@ -31,6 +31,12 @@ namespace hw2
         velocity_z = in_velocity_z;
     }
 
+    void atom::setForceZero(){
+        this->force_x = 0;
+        this->force_y = 0;
+        this->force_z = 0;
+    }
+
     double atom::getPostionX()
     {
         return this->postion_x;
@@ -44,6 +50,19 @@ namespace hw2
     double atom::getPostionZ()
     {
         return this->postion_z;
+    }
+
+    double atom::getVelocityX()
+    {
+        return this->velocity_x;
+    }
+    double atom::getVelocityY()
+    {
+        return this->velocity_y;
+    }
+    double atom::getVelocityZ()
+    {
+        return this->velocity_z;
     }
 
 
