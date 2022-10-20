@@ -12,4 +12,7 @@ update_neighbor_step 5
 totalstep 100
 MDstep_length 0.01
 output_everystep 2
+xizong NVT
+T0 200
+tau 0.05
 

@@ -11,31 +11,31 @@ namespace hw2
 {
 
     void geo::output(int step ){
-        std::ofstream ofs_postion("./OUTPUT/position.txt", std::ios::app);
-        std::ofstream ofs_velocity("./OUTPUT/velocity.txt", std::ios::app);
-        std::ofstream ofs_force("./OUTPUT/force.txt", std::ios::app);
+        // std::ofstream ofs_postion("./OUTPUT/position.txt", std::ios::app);
+        // std::ofstream ofs_velocity("./OUTPUT/velocity.txt", std::ios::app);
+        // std::ofstream ofs_force("./OUTPUT/force.txt", std::ios::app);
         std::ofstream ofs_log("./OUTPUT/run.log", std::ios::app);
         
         // postion.txt
-        ofs_postion << "Step: " << step << ", Time: " << step * MDstep_time << "ps" << std::endl;
-        for (int i = 0; i < atom_number; i++)
-        {
-            ofs_postion << i << "\t" << std::fixed << std::setprecision(12) << atoms[i].getPostionX() << "\t" << atoms[i].getPostionY() << "\t" << atoms[i].getPostionZ() <<std::endl;		
-        }
+        // ofs_postion << "Step: " << step << ", Time: " << step * MDstep_time << "ps" << std::endl;
+        // for (int i = 0; i < atom_number; i++)
+        // {
+        //     ofs_postion << i << "\t" << std::fixed << std::setprecision(12) << atoms[i].getPostionX() << "\t" << atoms[i].getPostionY() << "\t" << atoms[i].getPostionZ() <<std::endl;		
+        // }
 
         // velocity.txt
-        ofs_velocity << "Step: " << step << ", Time: " << step * MDstep_time << "ps" << std::endl;
-        for (int i = 0; i < atom_number; i++)
-        {
-            ofs_velocity << i << "\t" << std::fixed << std::setprecision(12) << atoms[i].getVelocityX() << "\t" << atoms[i].getVelocityY() << "\t" << atoms[i].getVelocityZ() <<std::endl;		
-        }
+        // ofs_velocity << "Step: " << step << ", Time: " << step * MDstep_time << "ps" << std::endl;
+        // for (int i = 0; i < atom_number; i++)
+        // {
+        //     ofs_velocity << i << "\t" << std::fixed << std::setprecision(12) << atoms[i].getVelocityX() << "\t" << atoms[i].getVelocityY() << "\t" << atoms[i].getVelocityZ() <<std::endl;		
+        // }
 
         // force.txt
-        ofs_force << "Step: " << step << ", Time: " << step * MDstep_time << "ps" << std::endl;
-        for (int i = 0; i < atom_number; i++)
-        {
-            ofs_force << i << "\t" << std::fixed << std::setprecision(12) << atoms[i].getForceX() << "\t" << atoms[i].getForceY() << "\t" << atoms[i].getForceZ() <<std::endl;		
-        }
+        // ofs_force << "Step: " << step << ", Time: " << step * MDstep_time << "ps" << std::endl;
+        // for (int i = 0; i < atom_number; i++)
+        // {
+        //     ofs_force << i << "\t" << std::fixed << std::setprecision(12) << atoms[i].getForceX() << "\t" << atoms[i].getForceY() << "\t" << atoms[i].getForceZ() <<std::endl;		
+        // }
 
 
         // run.log
@@ -50,12 +50,40 @@ namespace hw2
 
         double temperature =  2 * total_kinetic / atom_number / (1.38064852e-23 / 1.602176634e-19)   / 3 ;
 
+        
+        
         if (step == 0)
         {
-            ofs_log << "Step: " << "\t" << "Time: "<< "\t" << "total_energy: "<< "\t" << "total_potential: " << "\t"  << "total_kinetic_energy: " << "\t" << "temperature: "  << std::endl;
+            ofs_log << "Step: " << "\t" << "Time: "<< "\t" << "total_energy(eV): "<< "\t" << "total_potential(eV): " << "\t"  << "total_kinetic_energy(eV): " << "\t" << "temperature(K): "  << std::endl;
         }
-        ofs_log << step  << "\t" << std::fixed << std::setprecision(2)  << step * MDstep_time << "ps"  << "\t"  << std::fixed << std::setprecision(12) 
-        << total_potential + total_kinetic << "\t"  << total_potential  << "\t" << total_kinetic  << "\t" << temperature << std::endl;
+        if (step % output_everystep == 0)
+        {
+            ofs_log << step  << "\t" << std::fixed << std::setprecision(2)  << step * MDstep_time << "ps"  << "\t"  << std::fixed << std::setprecision(12) 
+                            << total_potential + total_kinetic << "\t"  << total_potential  << "\t" << total_kinetic  << "\t" << temperature << std::endl;
+        }
+
+        if (this->xizong == "NVT")
+        {
+            if (step != 0)
+            {
+                updateV_(temperature, step);
+            }
+        }
+        
+    }
+
+    void geo::updateV_(double temperature, int step)
+    {
+        double temp = ( this->T0 / temperature ) - 1;
+        double lamda = sqrt(1 + this->MDstep_time * temp / this->tau );
+        
+        for (int i = 0; i < atom_number; i++)
+        {
+            double x = atoms[i].getVelocityX();
+            double y = atoms[i].getVelocityY();
+            double z = atoms[i].getVelocityZ();
+            this->atoms[i].setVelocity(lamda * x, lamda * y, lamda * z);
+        }
     }
 
     void geo::runMD()
@@ -74,10 +102,7 @@ namespace hw2
         for (int step = 0; step <= total_step; step++)
         {
             // output
-            if (step % output_everystep == 0)
-            {
-                output(step);
-            }
+            output(step);
 
             // update neighborAtom_table
             if (step % update_neighbor_step == 0 && step != 0)
@@ -113,8 +138,6 @@ namespace hw2
                 double z = atoms[i].getVelocityZ() + MDstep_time * ( atoms[i].getForceZ() + pre_atoms_force_matrix[i][2] ) / 2 / mass;
                 atoms[i].setVelocity(x, y, z);
             }
-
-            
         }
         
     }
@@ -172,6 +195,15 @@ namespace hw2
 
         reader >> word >> info;
         this->output_everystep = info;
+
+        reader >> word >> word;
+        this->xizong = word;
+
+        reader >> word >> info;
+        this->T0 = info;
+
+        reader >> word >> info;
+        this->tau = info;
     }
 
     void geo::readGeoIN()

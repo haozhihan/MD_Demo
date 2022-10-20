@@ -37,6 +37,12 @@ namespace hw2
         double MDstep_time;
         int output_everystep;
 
+
+        // hw5 add
+        std::string xizong;
+        double T0;
+        double tau;
+
     public:
         geo(std::string mdINpath){
             readMDIN(mdINpath);
@@ -80,6 +86,9 @@ namespace hw2
         void runMD();
 
         void output(int step);
+
+        // hw5 add
+        void updateV_(double temperature, int step);
     };
 
     double calculate_distance(double x1, double y1, double z1, double x2, double y2, double z2, double size);
