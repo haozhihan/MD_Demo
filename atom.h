@@ -60,6 +60,8 @@ namespace hw2
 
     double setXToUnit(double x, double sizeX);
 
+    double randomNumber(double x1, double x2);
+
     // atom::atom(/* args */)
     // {
     // }

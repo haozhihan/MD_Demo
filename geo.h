@@ -89,6 +89,8 @@ namespace hw2
 
         // hw5 add
         void updateV_(double temperature, int step);
+
+        void setRandomVelocity();
     };
 
     double calculate_distance(double x1, double y1, double z1, double x2, double y2, double z2, double size);

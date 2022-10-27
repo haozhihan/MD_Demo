@@ -248,7 +248,7 @@ namespace hw2
             }
         }
 
-
+        // set velocity
         if (this->is_read_velocity == "yes")
         {
             // read ATOMIC_VELOCITY
@@ -266,9 +266,60 @@ namespace hw2
                 }
             }
         }
+        else if (this->is_read_velocity == "no")
+        {
+            for (int i = 0; i < atom_number; i++)
+            {
+                atoms[i].setVelocity(hw2::randomNumber(-0.5,0.5), hw2::randomNumber(-0.5,0.5), hw2::randomNumber(-0.5,0.5));
+
+            }
+        }
 
         reader.close();
         return;
+    }
+
+    void geo::setRandomVelocity()
+    {
+        // (1) random
+        double sumVelocityX = 0.0;
+        double sumVelocityY = 0.0;
+        double sumVelocityZ = 0.0;
+        for (int i = 0; i < atom_number; i++)
+        {
+            atoms[i].setVelocity(hw2::randomNumber(-0.5,0.5), hw2::randomNumber(-0.5,0.5), hw2::randomNumber(-0.5,0.5));
+            sumVelocityX = sumVelocityX + atoms[i].getVelocityX();
+            sumVelocityY = sumVelocityY + atoms[i].getVelocityY();
+            sumVelocityZ = sumVelocityZ + atoms[i].getVelocityZ();
+        }
+        // (2)random - average
+        double averageVelocityX = sumVelocityX / atom_number;
+        double averageVelocityY = sumVelocityY / atom_number;
+        double averageVelocityZ = sumVelocityZ / atom_number;
+        for (int i = 0; i < atom_number; i++)
+        {
+            double x = atoms[i].getVelocityX() - averageVelocityX;
+            double y = atoms[i].getVelocityY() - averageVelocityY;
+            double z = atoms[i].getVelocityZ() - averageVelocityZ;
+            atoms[i].setVelocity(x, y, z);
+        }
+        // (3)lamda * V
+        double e = 1.602176634e-19;
+        double k = 1.38064852e-23 / e;
+        double energy = 0.0;
+        for (int i = 0; i < atom_number; i++)
+        {
+            energy = energy + pow(atoms[i].getVelocityX(), 2) + pow(atoms[i].getVelocityY(), 2) + pow(atoms[i].getVelocityZ(), 2);
+        }
+        energy = energy * mass / 2;
+        double lamda = sqrt( 3 * atom_number * k * T0 / 2 / energy );
+        for (int i = 0; i < atom_number; i++)
+        {
+            double x = atoms[i].getVelocityX() * lamda;
+            double y = atoms[i].getVelocityY() * lamda;
+            double z = atoms[i].getVelocityZ() * lamda;
+            atoms[i].setVelocity(x, y, z);
+        }
     }
 
 

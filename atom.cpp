@@ -1,6 +1,7 @@
 #include "atom.h"
 #include "geo.h"
 #include <cmath>
+#include <random>
 
 namespace hw2
 {
@@ -15,6 +16,14 @@ namespace hw2
             x = x + sizeX;
         }
         return x;
+    }
+
+    double randomNumber(double x1, double x2)
+    {
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_real_distribution<double> dis(x1, x2);
+        return dis(gen);
     }
 
     void atom::setPostion(double in_postion_x, double in_postion_y, double in_postion_z)
